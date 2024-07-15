@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -250,6 +250,7 @@
 		2B4D0835FCB71323FDB06DE3 /* Pods-WeChat-SwiftUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WeChat-SwiftUITests.debug.xcconfig"; path = "Target Support Files/Pods-WeChat-SwiftUITests/Pods-WeChat-SwiftUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		4A361B9C52E3F24B78D51243 /* Pods-WeChat-SwiftUI.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WeChat-SwiftUI.debug.xcconfig"; path = "Target Support Files/Pods-WeChat-SwiftUI/Pods-WeChat-SwiftUI.debug.xcconfig"; sourceTree = "<group>"; };
 		705D3EF5AFF8B88FA29229A6 /* Pods-WeChat-SwiftUI.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WeChat-SwiftUI.release.xcconfig"; path = "Target Support Files/Pods-WeChat-SwiftUI/Pods-WeChat-SwiftUI.release.xcconfig"; sourceTree = "<group>"; };
+		9138F2DC2C458AD3000F8B0C /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = SOURCE_ROOT; };
 		9CB854DDD9775BEBC15DDB6F /* Pods_WeChat_SwiftUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WeChat_SwiftUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D74E8DA1C37B8DF975B82FD4 /* Pods-WeChat-SwiftUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WeChat-SwiftUITests.release.xcconfig"; path = "Target Support Files/Pods-WeChat-SwiftUITests/Pods-WeChat-SwiftUITests.release.xcconfig"; sourceTree = "<group>"; };
 		FD0EF413292A683F00FA4E5E /* StoreObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreObservableObject.swift; sourceTree = "<group>"; };
@@ -820,6 +821,7 @@
 		FDCC7219266E254D00A48140 /* WeChat-SwiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				9138F2DC2C458AD3000F8B0C /* .swiftlint.yml */,
 				FDCC7223266E254E00A48140 /* Info.plist */,
 				FDCC721A266E254D00A48140 /* WeChat_SwiftUIApp.swift */,
 				FDCC7245266E680800A48140 /* API */,
@@ -1671,7 +1673,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"WeChat-SwiftUI/PreviewContent\"";
-				DEVELOPMENT_TEAM = PDS2N83HDN;
+				DEVELOPMENT_TEAM = WDE622528T;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = "WeChat-SwiftUI/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1694,7 +1696,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"WeChat-SwiftUI/PreviewContent\"";
-				DEVELOPMENT_TEAM = PDS2N83HDN;
+				DEVELOPMENT_TEAM = WDE622528T;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_FILE = "WeChat-SwiftUI/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -1716,7 +1718,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = PDS2N83HDN;
+				DEVELOPMENT_TEAM = WDE622528T;
 				INFOPLIST_FILE = "WeChat-SwiftUITests/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1739,7 +1741,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = PDS2N83HDN;
+				DEVELOPMENT_TEAM = WDE622528T;
 				INFOPLIST_FILE = "WeChat-SwiftUITests/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -1761,7 +1763,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = PDS2N83HDN;
+				DEVELOPMENT_TEAM = WDE622528T;
 				INFOPLIST_FILE = "WeChat-SwiftUIUITests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1783,7 +1785,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = PDS2N83HDN;
+				DEVELOPMENT_TEAM = WDE622528T;
 				INFOPLIST_FILE = "WeChat-SwiftUIUITests/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

@@ -4,8 +4,7 @@
 //
 // =======================================================================
 
-// swiftlint:disable line_length
-// swiftlint:disable file_length
+// swiftlint:disable line_length file_length type_body_length
 public enum Strings {
   /**
    "Internal server error"
@@ -932,3 +931,4 @@ public enum Strings {
     )
   }
 }
+// swiftlint:enable line_length file_length type_body_length
