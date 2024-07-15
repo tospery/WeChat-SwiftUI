@@ -1,7 +1,5 @@
 # WeChat-SwiftUI
 
-> 本项目已使用 [The Composable Architecture](https://github.com/pointfreeco/swift-composable-architecture) 重构，最新代码在 [composable-architecture](https://github.com/Lebron1992/WeChat-SwiftUI/tree/composable-architecture) 分支。
-
 用 SwiftUI 仿写的微信。
 
 虽然只是一个仿写的项目，但我还是按照实际生产开发的要求去编写，而不仅仅是停留在简单的 UI 层面。
@@ -13,11 +11,9 @@
 <img src="./previews/1.png" width="200"/> <img src="./previews/2.png" width="200"/> <img src="./previews/3.png" width="200"/> <img src="./previews/4.png" width="200"/>
 <img src="./previews/5.png" width="200"/> <img src="./previews/6.png" width="200"/> <img src="./previews/7.png" width="200"/> <img src="./previews/8.png" width="200"/>
 
-## 核心架构 Redux
+## 核心架构 TCA
 
-Redux 在 React 项目中使用非常广泛。而 SwiftUI 声明式编程的理念与 React 非常类似。所以在 SwiftUI 中使用 Redux 再合适不过了。什么是 Redux？如何实现 Redux？可以去看我之前写的一篇文章 [《在 SwiftUI 中实现 Redux》](https://juejin.cn/post/6912251186770870286)
-
-本项目就使用了 Redux 架构，相关的文件在 `Redux`  文件夹下。
+[The Composable Architecture](https://github.com/pointfreeco/swift-composable-architecture) （简称 TCA）是一个可以让你用一致和可理解的方式来构建应用的库。可用于 SwiftUI、UIKit等；并且适用于任何苹果平台（iOS、macOS、tvOS 和  watchOS）。 我已经对这个库进行了[源码解析](https://juejin.cn/post/7165326896530456613)，有兴趣可以点击查看。
 
 ## 多语言的处理
 
@@ -65,8 +61,6 @@ Redux 在 React 项目中使用非常广泛。而 SwiftUI 声明式编程的理�
 ## 运行项目
 
 本项目因为使用了 Google 的 Firebase，所以中国大陆用户运行前请连接 VPN。
-
-测试账号：wechatswiftuitest@lebron.com / 11111111。
 
 ## 添加新功能
 

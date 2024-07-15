@@ -1,4 +1,5 @@
 import Combine
+import ComposableArchitecture
 
 struct FirestoreServiceMock: FirestoreServiceType {
 
@@ -58,59 +59,58 @@ struct FirestoreServiceMock: FirestoreServiceType {
     self.overrideUserError = overrideUserError
   }
 
-  func insert(_ message: Message, to dialog: Dialog) -> AnyPublisher<Void, Error> {
+  func insert(_ message: Message, to dialog: Dialog) async throws -> Success {
     if let error = insertMessageError {
-      return .publisher(failure: error)
+      throw error
     }
-    return .publisher(output: ())
+    return .init()
   }
 
-  func loadContacts() -> AnyPublisher<[User], Error> {
+  func loadContacts() async throws -> [User] {
     if let error = loadContactsError {
-      return .publisher(failure: error)
+      throw error
     }
-    return .publisher(output: loadContactsResponse ?? [.template, .template2])
+    return loadContactsResponse ?? [.template1, .template2]
   }
 
-  func loadDialogs() -> AnyPublisher<[Dialog], Error> {
+  func loadDialogs() async throws -> [Dialog] {
     if let error = loadDialogsError {
-      return .publisher(failure: error)
+      throw error
     }
-    return .publisher(output: loadDialogsResponse ?? [.template1])
+    return loadDialogsResponse ?? [.template1]
   }
 
-  func loadMessages(for dialog: Dialog) -> AnyPublisher<[Message], Error> {
+  func loadMessages(for dialog: Dialog) async throws -> [Message] {
     if let error = loadMessagesError {
-      return .publisher(failure: error)
+      throw error
     }
-    return .publisher(output: loadMessagesResponse ?? [.textTemplate])
+    return loadMessagesResponse ?? [.textTemplate1]
   }
 
-  func loadOfficialAccounts() -> AnyPublisher<[OfficialAccount], Error> {
+  func loadOfficialAccounts() async throws -> [OfficialAccount] {
     if let error = loadOfficialAccountsError {
-      return .publisher(failure: error)
+      throw error
     }
-    return .publisher(output: loadOfficialAccountsResponse ?? [.template, .template2])
+    return loadOfficialAccountsResponse ?? [.template1, .template2]
   }
 
-  func loadUserSelf() -> AnyPublisher<User, Error> {
+  func loadUserSelf() async throws -> User {
     if let error = loadUserSelfError {
-      return .publisher(failure: error)
+      throw error
     }
-    return .publisher(output: loadUserSelfResponse ?? .template)
+    return loadUserSelfResponse ?? .template1
   }
 
-  func overrideDialog(_ dialog: Dialog) -> AnyPublisher<Void, Error> {
+  func overrideDialog(_ dialog: Dialog) async throws -> Success {
     if let error = overrideDialogError {
-      return .publisher(failure: error)
+      throw error
     }
-    return .publisher(output: ())
+    return .init()
   }
 
-  func overrideUser(_ user: User) -> AnyPublisher<Void, Error> {
+  func overrideUser(_ user: User) async throws {
     if let error = overrideUserError {
-      return .publisher(failure: error)
+      throw error
     }
-    return .publisher(output: ())
   }
 }

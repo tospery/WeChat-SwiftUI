@@ -2,7 +2,6 @@ import SwiftUI
 import URLImage
 
 struct MessageContentText: View {
-  let message: Message
 
   var body: some View {
     HStack(alignment: .top, spacing: -Constant.textBackgroundArrowOverlapWidth) {
@@ -22,6 +21,8 @@ struct MessageContentText: View {
       }
     }
   }
+
+  let message: Message
 }
 
 private extension MessageContentText {
@@ -77,12 +78,12 @@ private extension MessageContentText {
 
 struct MessageRowText_Previews: PreviewProvider {
   static var previews: some View {
-    Group {
-      MessageContentText(message: .textTemplate)
+    VStack {
+      MessageContentText(message: .textTemplate1)
       MessageContentText(message: .textTemplate2)
     }
-    .padding(50)
+    .padding(10)
     .background(.green)
-    .onAppear { AppEnvironment.updateCurrentUser(.template) }
+    .onAppear { AppEnvironment.updateCurrentUser(.template1) }
   }
 }

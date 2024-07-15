@@ -1,12 +1,72 @@
 import SwiftUI
+import ComposableArchitecture
 import FirebaseAuth
 import FirebaseFirestore
-import SwiftUIRedux
 
 struct OnboardingView: View {
 
-  @EnvironmentObject
-  private var store: Store<AppState>
+  var body: some View {
+    WithViewStore(store) { viewStore in
+      VStack {
+        Spacer()
+
+        Group {
+          if mode == .register {
+            TextField(Strings.onboarding_name(), text: $name)
+          }
+          TextField(Strings.onboarding_email(), text: $email)
+          SecureField(Strings.onboarding_password(), text: $password)
+        }
+        .disableAutocorrection(true)
+        .autocapitalization(.none)
+        .padding()
+        .border(Color.text_primary, width: 1)
+
+        HStack {
+          if mode == .login {
+            Button {
+              login(viewStore)
+            } label: {
+              Text(Strings.onboarding_login())
+            }
+          } else {
+            Button {
+              register(viewStore)
+            } label: {
+              Text(Strings.onboarding_register())
+            }
+          }
+        }
+
+        Spacer()
+
+        Button {
+          mode = (mode == .login) ? .register : .login
+        } label: {
+          let mode = mode == .login ? Strings.onboarding_register() : Strings.onboarding_login()
+          Text(Strings.onboarding_switch_to(mode: mode))
+        }
+      }
+      .padding()
+      .background(.white)
+      .resignKeyboardOnTap()
+      .showLoading(showLoading)
+      .onChange(of: viewModel.registerStatus) {
+        handleRegisterStatusChange($0, viewStore: viewStore)
+      }
+      .onChange(of: viewModel.signInStatus) {
+        handleSignInStatusChange($0, viewStore: viewStore)
+      }
+      .onChange(of: viewModel.usernameUpdateStatus) { status in
+        Task { await handleUsernameUpdateStatusChange(status, viewStore: viewStore) }
+      }
+      .onChange(of: viewModel.userSelfUpdateStatus) {
+        handleUserSelfUpdateStatusChange($0, viewStore: viewStore)
+      }
+    }
+  }
+
+  let store: Store<AppState, AppAction>
 
   @StateObject
   private var viewModel = OnboardingViewModel()
@@ -25,71 +85,24 @@ struct OnboardingView: View {
 
   @State
   var showLoading = false
-
-  var body: some View {
-    VStack {
-      Spacer()
-
-      Group {
-        if mode == .register {
-          TextField(Strings.onboarding_name(), text: $name)
-        }
-        TextField(Strings.onboarding_email(), text: $email)
-        SecureField(Strings.onboarding_password(), text: $password)
-      }
-      .disableAutocorrection(true)
-      .autocapitalization(.none)
-      .padding()
-      .border(Color.text_primary, width: 1)
-
-      HStack {
-        if mode == .login {
-          Button(action: login) {
-            Text(Strings.onboarding_login())
-          }
-        } else {
-          Button(action: register) {
-            Text(Strings.onboarding_register())
-          }
-        }
-      }
-
-      Spacer()
-
-      Button {
-        mode = (mode == .login) ? .register : .login
-      } label: {
-        let mode = mode == .login ? Strings.onboarding_register() : Strings.onboarding_login()
-        Text(Strings.onboarding_switch_to(mode: mode))
-      }
-    }
-    .padding()
-    .background(.white)
-    .resignKeyboardOnTap()
-    .showLoading(showLoading)
-    .onChange(of: viewModel.registerStatus, perform: handleRegisterStatusChange(_:))
-    .onChange(of: viewModel.signInStatus, perform: handleSignInStatusChange(_:))
-    .onChange(of: viewModel.usernameUpdateStatus, perform: handleUsernameUpdateStatusChange(_:))
-    .onChange(of: viewModel.userSelfUpdateStatus, perform: handleUserSelfUpdateStatusChange(_:))
-  }
 }
 
 // MARK: - Helper Methods
 private extension OnboardingView {
-  func login() {
+  func login(_ viewStore: ViewStore<AppState, AppAction>) {
     guard allFieldsAreValid() else {
-        setErrorMessage(Strings.onboarding_email_password_cannot_empty())
+      viewStore.send(.system(.setErrorMessage(Strings.onboarding_email_password_cannot_empty())))
       return
     }
-    viewModel.signIn(email: email, password: password)
+    Task { await viewModel.signIn(email: email, password: password) }
   }
 
-  func register() {
+  func register(_ viewStore: ViewStore<AppState, AppAction>) {
     guard allFieldsAreValid() else {
-        setErrorMessage(Strings.onboarding_name_email_password_cannot_empty())
+      viewStore.send(.system(.setErrorMessage(Strings.onboarding_name_email_password_cannot_empty())))
       return
     }
-    viewModel.register(email: email, password: password)
+    Task { await viewModel.register(email: email, password: password) }
   }
 
   func allFieldsAreValid() -> Bool {
@@ -110,7 +123,10 @@ private extension OnboardingView {
     showLoading = show
   }
 
-  func handleRegisterStatusChange(_ status: ValueUpdateStatus<AuthDataResult>) {
+  func handleRegisterStatusChange(
+    _ status: ValueUpdateStatus<AuthDataResult>,
+    viewStore: ViewStore<AppState, AppAction>
+  ) {
     switch status {
     case .idle:
       setShowLoading(false)
@@ -118,14 +134,14 @@ private extension OnboardingView {
       setShowLoading(true)
     case .finished(let result):
       setShowLoading(false)
-      viewModel.updateUsername(authResult: result, username: name)
+      Task { await viewModel.updateUsername(authResult: result, username: name) }
     case .failed(let error):
       setShowLoading(false)
-      setErrorMessage(error.localizedDescription)
+      viewStore.send(.system(.setErrorMessage(error.localizedDescription)))
     }
   }
 
-  func handleSignInStatusChange(_ status: ValueUpdateStatus<User>) {
+  func handleSignInStatusChange(_ status: ValueUpdateStatus<User>, viewStore: ViewStore<AppState, AppAction>) {
     switch status {
     case .idle:
       setShowLoading(false)
@@ -133,14 +149,17 @@ private extension OnboardingView {
       setShowLoading(true)
     case .finished(let user):
       setShowLoading(false)
-      updateSignedInUser(user)
+      viewStore.send(.auth(.setSignedInUser(user)))
     case .failed(let error):
       setShowLoading(false)
-      setErrorMessage(error.localizedDescription)
+      viewStore.send(.system(.setErrorMessage(error.localizedDescription)))
     }
   }
 
-  func handleUsernameUpdateStatusChange(_ status: ValueUpdateStatus<User>) {
+  func handleUsernameUpdateStatusChange(
+    _ status: ValueUpdateStatus<User>,
+    viewStore: ViewStore<AppState, AppAction>
+  ) async {
     switch status {
     case .idle:
       setShowLoading(false)
@@ -148,14 +167,14 @@ private extension OnboardingView {
       setShowLoading(true)
     case .finished(let user):
       setShowLoading(false)
-      viewModel.updateUserSelf(user)
+      await viewModel.updateUserSelf(user)
     case .failed(let error):
       setShowLoading(false)
-      setErrorMessage(error.localizedDescription)
+      viewStore.send(.system(.setErrorMessage(error.localizedDescription)))
     }
   }
 
-  func handleUserSelfUpdateStatusChange(_ status: ValueUpdateStatus<User>) {
+  func handleUserSelfUpdateStatusChange(_ status: ValueUpdateStatus<User>, viewStore: ViewStore<AppState, AppAction>) {
     switch status {
     case .idle:
       setShowLoading(false)
@@ -163,7 +182,7 @@ private extension OnboardingView {
       setShowLoading(true)
     case .finished(let user):
       setShowLoading(false)
-      updateSignedInUser(user)
+      viewStore.send(.auth(.setSignedInUser(user)))
     case .failed:
       setShowLoading(false)
     }
@@ -179,6 +198,10 @@ extension OnboardingView {
 
 struct LoginView_Previews: PreviewProvider {
   static var previews: some View {
-    OnboardingView()
+    let store = Store(
+      initialState: AppState(),
+      reducer: appReducer
+    )
+    OnboardingView(store: store)
   }
 }

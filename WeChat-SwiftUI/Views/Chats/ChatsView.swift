@@ -1,6 +1,8 @@
 import SwiftUI
+import ComposableArchitecture
 
 struct ChatsView: View {
+
   var body: some View {
     NavigationView {
       DialogsList()
@@ -9,11 +11,18 @@ struct ChatsView: View {
         .navigationBarItems(trailing: Image("icons_outlined_add"))
     }
     .navigationViewStyle(.stack)
+    .environmentObject(StoreObservableObject(store: store))
   }
+
+  let store: Store<AppState, AppAction>
 }
 
 struct ChatsView_Previews: PreviewProvider {
     static var previews: some View {
-        ChatsView()
+      let store = Store(
+        initialState: AppState(chatsState: .init(dialogs: [.template1, .template2], dialogMessages: [])),
+        reducer: appReducer
+      )
+      ChatsView(store: store)
     }
 }

@@ -1,11 +1,17 @@
 import XCTest
-import SwiftUIRedux
+import ComposableArchitecture
 @testable import WeChat_SwiftUI
 
 private typealias Row = MyProfileView.Row
 private typealias SubRow = MyProfileView.Row.SubRow
 
 final class MyProfileView_RowTests: XCTestCase {
+
+  let user = User.template1!
+  let store = Store(
+    initialState: AppState(),
+    reducer: appReducer
+  )
 
   func test_row_subRows() {
     XCTAssertEqual(Row.photo.subRows.count, 0)
@@ -24,7 +30,6 @@ final class MyProfileView_RowTests: XCTestCase {
   }
 
   func test_row_navigateDestination() {
-    let user = User.template!
     XCTAssertEqual(Row.photo.navigateDestination(with: user).style, .push)
     XCTAssertEqual(Row.name.navigateDestination(with: user).style, .modal)
     XCTAssertEqual(Row.wechatId.navigateDestination(with: user).style, .push)
@@ -39,7 +44,6 @@ final class MyProfileView_RowTests: XCTestCase {
   }
 
   func test_subRow_navigateDestination() {
-    let user = User.template!
     XCTAssertEqual(SubRow.gender.navigateDestination(with: user).style, .modal)
     XCTAssertEqual(SubRow.region.navigateDestination(with: user).style, .modal)
     XCTAssertEqual(SubRow.whatsUp.navigateDestination(with: user).style, .modal)

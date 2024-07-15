@@ -56,34 +56,30 @@ final class MyProfilePhotoPreviewViewModelTests: XCTestCase {
     viewModel.uploadPhoto(testImage)
 
     wait {
-      self.photoUploadStatus.assertValues([.idle, .updating, .failed(NSError.unknowError)])
+      self.photoUploadStatus.assertValues([.idle, .updating, .failed(NSError.unknowError.toEnvelope())])
     }
   }
 
-  func test_updateUserSelf_finished() {
+  func test_updateUserSelf_finished() async {
     let expectation = XCTestExpectation(description: "Wait for response")
 
-    withEnvironment(firestoreService: FirestoreServiceMock()) {
-      viewModel.updateUserSelf(.template)
-      DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-        self.userSelfUpdateStatus.assertValues([.idle, .updating, .finished(.template)])
-        expectation.fulfill()
-      }
+    await withEnvironment(firestoreService: FirestoreServiceMock()) {
+      await viewModel.updateUserSelf(.template1)
+      self.userSelfUpdateStatus.assertValues([.idle, .updating, .finished(.template1)])
+      expectation.fulfill()
     }
 
     wait(for: [expectation], timeout: 0.3)
   }
 
-  func test_updateUserSelf_failed() {
+  func test_updateUserSelf_failed() async {
     let expectation = XCTestExpectation(description: "Wait for response")
     let service = FirestoreServiceMock(overrideUserError: NSError.unknowError)
 
-    withEnvironment(firestoreService: service) {
-      viewModel.updateUserSelf(.template)
-      DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-        self.userSelfUpdateStatus.assertValues([.idle, .updating, .failed(NSError.unknowError)])
-        expectation.fulfill()
-      }
+    await withEnvironment(firestoreService: service) {
+      await viewModel.updateUserSelf(.template1)
+      self.userSelfUpdateStatus.assertValues([.idle, .updating, .failed(NSError.unknowError)])
+      expectation.fulfill()
     }
 
     wait(for: [expectation], timeout: 0.3)

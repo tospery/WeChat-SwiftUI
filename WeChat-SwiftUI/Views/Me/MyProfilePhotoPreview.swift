@@ -1,8 +1,39 @@
 import SwiftUI
+import ComposableArchitecture
 import URLImage
 
 struct MyProfilePhotoPreview: View {
+
+  var body: some View {
+    WithViewStore(store.wrappedValue) { viewStore in
+      avatar
+        .navigationBarItems(trailing: moreButton)
+        .navigationTitle(Strings.me_my_profile_photo())
+        .sheet(item: $photoPicker) { pickerType in
+          switch pickerType {
+          case .camera: ImagePicker(sourceType: .camera) { handlePickedImage($0) }
+          case .library: ImagePicker(sourceType: .photoLibrary) { handlePickedImage($0) }
+          }
+        }
+        .showLoading(showLoading)
+        .onChange(of: viewModel.photoUploadStatus) { status in
+          Task { await handlePhotoUploadStatusChange(status, viewStore: viewStore) }
+        }
+        .onChange(of: viewModel.userSelfUpdateStatus) {
+          handleUserSelfUpdateStatusChange($0, viewStore: viewStore)
+        }
+        .onChange(of: pickedPhoto) { newImage in
+          if let image = newImage {
+            viewModel.uploadPhoto(image)
+          }
+        }
+    }
+  }
+
   let photoUrl: String?
+
+  @EnvironmentObject
+  private var store: StoreObservableObject<Void, AppAction>
 
   @State
   private var photoPicker: PhotoPickerType?
@@ -15,26 +46,6 @@ struct MyProfilePhotoPreview: View {
 
   @StateObject
   private var viewModel = MyProfilePhotoPreviewViewModel()
-
-  var body: some View {
-    avatar
-      .navigationBarItems(trailing: moreButton)
-      .navigationTitle(Strings.me_my_profile_photo())
-      .sheet(item: $photoPicker) { pickerType in
-        switch pickerType {
-        case .camera: ImagePicker(sourceType: .camera) { handlePickedImage($0) }
-        case .library: ImagePicker(sourceType: .photoLibrary) { handlePickedImage($0) }
-        }
-      }
-      .showLoading(showLoading)
-      .onChange(of: viewModel.photoUploadStatus, perform: handlePhotoUploadStatusChange(_:))
-      .onChange(of: viewModel.userSelfUpdateStatus, perform: handleUserSelfUpdateStatusChange(_:))
-      .onChange(of: pickedPhoto) { newImage in
-        if let image = newImage {
-          viewModel.uploadPhoto(image)
-        }
-      }
-  }
 }
 
 // MARK: - Views
@@ -74,35 +85,35 @@ private extension MyProfilePhotoPreview {
 // MARK: - Helper Methods
 private extension MyProfilePhotoPreview {
 
-  func handlePhotoUploadStatusChange(_ status: ValueUpdateStatus<URL>) {
+  func handlePhotoUploadStatusChange(_ status: ValueUpdateStatus<URL>, viewStore: ViewStore<Void, AppAction>) async {
     switch status {
     case .updating:
       showLoading = true
 
     case .finished(let url):
       let newUser = AppEnvironment.current.currentUser!.setAvatar(url.absoluteString)
-      viewModel.updateUserSelf(newUser)
+      await viewModel.updateUserSelf(newUser)
       showLoading = false
 
     case .failed(let error):
-      setErrorMessage(error.localizedDescription)
+      viewStore.send(.system(.setErrorMessage(error.localizedDescription)))
       showLoading = false
     default:
       showLoading = false
     }
   }
 
-  func handleUserSelfUpdateStatusChange(_ status: ValueUpdateStatus<User>) {
+  func handleUserSelfUpdateStatusChange(_ status: ValueUpdateStatus<User>, viewStore: ViewStore<Void, AppAction>) {
     switch status {
     case .updating:
       showLoading = true
 
     case .finished(let user):
-      updateSignedInUser(user)
+      viewStore.send(.auth(.setSignedInUser(user)))
       showLoading = false
 
     case .failed(let error):
-      setErrorMessage(error.localizedDescription)
+      viewStore.send(.system(.setErrorMessage(error.localizedDescription)))
       showLoading = false
     default:
       showLoading = false
@@ -117,6 +128,12 @@ private extension MyProfilePhotoPreview {
 
 struct MyProfilePhotoPreview_Previews: PreviewProvider {
   static var previews: some View {
-    MyProfilePhotoPreview(photoUrl: nil)
+    let store = Store(
+      initialState: AppState(),
+      reducer: appReducer
+    )
+      .stateless
+    MyProfilePhotoPreview(photoUrl: User.template1.avatar)
+      .environmentObject(StoreObservableObject(store: store))
   }
 }

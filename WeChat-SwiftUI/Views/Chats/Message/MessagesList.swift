@@ -1,7 +1,7 @@
 import SwiftUI
+import ComposableArchitecture
 
 struct MessagesList: View {
-  let messages: [Message]
 
   var body: some View {
     List {
@@ -14,6 +14,11 @@ struct MessagesList: View {
     .background(.app_bg)
     .listStyle(.plain)
   }
+
+  let messages: [Message]
+
+  @EnvironmentObject
+  private var store: StoreObservableObject<AppState, AppAction>
 }
 
 private extension MessagesList {
@@ -24,6 +29,11 @@ private extension MessagesList {
 
 struct MessagesList_Previews: PreviewProvider {
   static var previews: some View {
-    MessagesList(messages: [Message.textTemplate, Message.textTemplate2])
+    let store = Store(
+      initialState: AppState(),
+      reducer: appReducer
+    )
+    MessagesList(messages: [Message.textTemplate1, Message.textTemplate2])
+      .environmentObject(StoreObservableObject(store: store))
   }
 }

@@ -1,12 +1,13 @@
 import Combine
+import ComposableArchitecture
 
 protocol FirestoreServiceType {
-  func insert(_ message: Message, to dialog: Dialog) -> AnyPublisher<Void, Error>
-  func loadContacts() -> AnyPublisher<[User], Error>
-  func loadDialogs() -> AnyPublisher<[Dialog], Error>
-  func loadMessages(for dialog: Dialog) -> AnyPublisher<[Message], Error>
-  func loadOfficialAccounts() -> AnyPublisher<[OfficialAccount], Error>
-  func loadUserSelf() -> AnyPublisher<User, Error>
-  func overrideDialog(_ dialog: Dialog) -> AnyPublisher<Void, Error>
-  func overrideUser(_ user: User) -> AnyPublisher<Void, Error>
+  func insert(_ message: Message, to dialog: Dialog) async throws -> Success
+  func loadContacts() async throws -> [User]
+  func loadDialogs() async throws -> [Dialog]
+  func loadMessages(for dialog: Dialog) async throws -> [Message]
+  func loadOfficialAccounts() async throws -> [OfficialAccount]
+  func loadUserSelf() async throws -> User
+  func overrideDialog(_ dialog: Dialog) async throws -> Success
+  func overrideUser(_ user: User) async throws
 }

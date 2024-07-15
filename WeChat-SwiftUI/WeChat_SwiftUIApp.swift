@@ -1,5 +1,5 @@
 import SwiftUI
-import SwiftUIRedux
+import ComposableArchitecture
 import Firebase
 import URLImage
 import URLImageStore
@@ -7,7 +7,7 @@ import URLImageStore
 @main
 struct WeChat_SwiftUIApp: App {
 
-  private let cancelBag = CancelBag()
+  private let store: Store<AppState, AppAction>
 
   private let urlImageService = URLImageService(
     fileStore: URLImageFileStore(),
@@ -20,27 +20,23 @@ struct WeChat_SwiftUIApp: App {
     let restoredEnv = AppEnvironment.fromStorage(userDefaults: UserDefaults.standard)
     AppEnvironment.replaceCurrentEnvironment(restoredEnv)
 
-    // 保存 AppState
-    let appState = AppState()
-    store.$state
-      .scan((appState, appState)) { result, newState in
-        let oldState = result.1
-        if oldState.archivePropertiesEqualTo(newState) == false {
-          newState.archive()
-        }
-        return (oldState, newState)
-      }
-      .sink(receiveValue: { _ in })
-      .store(in: cancelBag)
+    // 放在 FirebaseApp.configure() 之后初始化
+    store = Store(
+      initialState: AppState(),
+      reducer: appReducer
+    )
 
     styleApp()
   }
 
   var body: some Scene {
     WindowGroup {
-      StoreProvider(store: store) {
-        ContentView()
+      WithViewStore(store) { viewStore in
+        ContentView(store: store)
           .environment(\.urlImageService, urlImageService)
+          .onChange(of: viewStore.state, perform: { newValue in
+            newValue.archive()
+          })
       }
     }
   }

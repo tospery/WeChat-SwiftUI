@@ -1,5 +1,5 @@
 import SwiftUI
-import SwiftUIRedux
+import ComposableArchitecture
 
 /* TODO:
 --- 暗黑模式时，TextEditor 的背景颜色不对
@@ -7,10 +7,35 @@ import SwiftUIRedux
 
 struct MyProfileFieldUpdateView: View {
 
+  var body: some View {
+    WithViewStore(store.wrappedValue) { viewStore in
+      NavigationView {
+        List {
+          switch field {
+          case .name:    nameEditor
+          case .gender:  genderEditor
+          case .whatsUp: whatsUpEditor
+          case .region:  EmptyView()
+          }
+        }
+        .listStyle(.plain)
+        .background(.app_bg)
+        .navigationTitle(field.navigationBarTitle)
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarItems(leading: cancelButton, trailing: doneButton)
+        .showLoading(showLoading)
+        .onChange(of: viewModel.userSelfUpdateStatus) {
+          handleUserSelfUpdateStatusChange($0, viewStore: viewStore)
+        }
+      }
+      .onAppear(perform: setDefaultValues)
+    }
+  }
+
   let field: Field
 
   @EnvironmentObject
-  private var store: Store<AppState>
+  private var store: StoreObservableObject<Void, AppAction>
 
   @SwiftUI.Environment(\.dismiss)
   private var dismiss
@@ -25,28 +50,7 @@ struct MyProfileFieldUpdateView: View {
   private var showLoading = false
 
   @StateObject
-  private var viewModel = MyProfileFieldUpdateViewModel()
-
-  var body: some View {
-    NavigationView {
-      List {
-        switch field {
-        case .name:    nameEditor
-        case .gender:  genderEditor
-        case .whatsUp: whatsUpEditor
-        case .region:  EmptyView()
-        }
-      }
-      .listStyle(.plain)
-      .background(.app_bg)
-      .navigationTitle(field.navigationBarTitle)
-      .navigationBarTitleDisplayMode(.inline)
-      .navigationBarItems(leading: cancelButton, trailing: doneButton)
-      .showLoading(showLoading)
-      .onChange(of: viewModel.userSelfUpdateStatus, perform: handleUserSelfUpdateStatusChange(_:))
-    }
-    .onAppear(perform: setDefaultValues)
-  }
+  private var viewModel = UserSelfUpdateViewModel()
 }
 
 // MARK: - Views
@@ -112,6 +116,7 @@ private extension MyProfileFieldUpdateView {
 
   var cancelButton: some View {
     Button {
+      Task { await viewModel.cancelUpdateUserSelf() }
       dismiss()
     } label: {
       Text(Strings.general_cancel())
@@ -122,10 +127,8 @@ private extension MyProfileFieldUpdateView {
 
   var doneButton: some View {
     Button {
-      guard isValueChanged else {
-        return
-      }
-      viewModel.updateUserSelf(newUser)
+      guard isValueChanged else { return }
+      Task { await viewModel.updateUserSelf(newUser) }
     } label: {
       Text(Strings.general_done())
         .font(.system(size: Constant.actionButtonFontSize, weight: .medium))
@@ -141,18 +144,18 @@ private extension MyProfileFieldUpdateView {
 // MARK: - Helper Methods
 private extension MyProfileFieldUpdateView {
 
-  func handleUserSelfUpdateStatusChange(_ status: ValueUpdateStatus<User>) {
+  func handleUserSelfUpdateStatusChange(_ status: ValueUpdateStatus<User>, viewStore: ViewStore<Void, AppAction>) {
     switch status {
     case .updating:
       showLoading = true
 
     case .finished(let user):
-      updateSignedInUser(user)
+      viewStore.send(.auth(.setSignedInUser(user)))
       showLoading = false
       dismiss()
 
     case .failed(let error):
-      setErrorMessage(error.localizedDescription)
+      viewStore.send(.system(.setErrorMessage(error.localizedDescription)))
       showLoading = false
     default:
       showLoading = false
@@ -234,6 +237,11 @@ private extension MyProfileFieldUpdateView {
 
 struct MyProfileFieldUpdateView_Previews: PreviewProvider {
   static var previews: some View {
+    let store = Store(
+      initialState: AppState(),
+      reducer: appReducer
+    )
+      .stateless
     Group {
       MyProfileFieldUpdateView(field: .name("Lebron"))
       MyProfileFieldUpdateView(field: .gender(.male))
@@ -245,5 +253,6 @@ struct MyProfileFieldUpdateView_Previews: PreviewProvider {
       MyProfileFieldUpdateView(field: .whatsUp("Hello, SwiftUI!"))
     }
     .colorScheme(.dark)
+    .environmentObject(StoreObservableObject(store: store))
   }
 }

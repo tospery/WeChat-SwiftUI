@@ -1,5 +1,5 @@
 import SwiftUI
-import SwiftUIRedux
+import ComposableArchitecture
 import URLImage
 
 /* TODO:
@@ -8,30 +8,33 @@ import URLImage
  */
 
 struct ContactDetail: View {
+
+  var body: some View {
+    WithViewStore(store.wrappedValue, observe: { $0.chatsState.dialogs }) { viewStore in
+      List {
+        Group {
+          sectionInfoEditPrivacy
+          SectionHeaderBackground()
+          sectionMomentsMore
+          SectionHeaderBackground()
+          sectionMessagesCall(viewStore)
+        }
+        .listRowBackground(Color.app_white)
+        .listSectionSeparator(.hidden)
+      }
+      .background(.app_bg)
+      .listStyle(.plain)
+      .environment(\.defaultMinListRowHeight, 10)
+    }
+  }
+
   let contact: User
 
   @EnvironmentObject
-  private var store: Store<AppState>
+  private var store: StoreObservableObject<AppState, AppAction>
 
   @State
   private var navigationSelection: NavigationSelection?
-
-  var body: some View {
-    List {
-      Group {
-        sectionInfoEditPrivacy
-        SectionHeaderBackground()
-        sectionMomentsMore
-        SectionHeaderBackground()
-        sectionMessagesCall
-      }
-      .listRowBackground(Color.app_white)
-      .listSectionSeparator(.hidden)
-    }
-    .background(.app_bg)
-    .listStyle(.plain)
-    .environment(\.defaultMinListRowHeight, 10)
-  }
 }
 
 private extension ContactDetail {
@@ -53,17 +56,16 @@ private extension ContactDetail {
     }
   }
 
-  var sectionMessagesCall: some View {
+  func sectionMessagesCall(_ viewStore: ViewStore<[Dialog], AppAction>) -> some View {
     Section {
       VStack(spacing: 0) {
-        sendMessageButton
+        sendMessageButton(viewStore)
         Color.bg_info_200.frame(height: 0.8)
         callButton
       }
       .foregroundColor(.link)
       .font(.system(size: Constant.actionButtonFontSize, weight: .medium))
       .buttonStyle(BorderlessButtonStyle()) // 解决：点击其中一个按钮导致两个按钮触发点击事件和 cell 被点击选中
-      .listRowInsets(.zero)
     }
   }
 
@@ -116,15 +118,15 @@ private extension ContactDetail {
     )
   }
 
-  var sendMessageButton: some View {
-    let cachedDialog = store.state.chatsState.dialogs
+  func sendMessageButton(_ viewStore: ViewStore<[Dialog], AppAction>) -> some View {
+    let cachedDialog = viewStore.state
       .first { $0.isIndividual(with: .init(user: contact)) }
     let dialog = cachedDialog ?? Dialog(members: [
       .init(user: contact),
       .currentUser!
     ])
 
-    return NavigationLink(
+    return NavigationRow(
       tag: NavigationSelection.messages,
       selection: $navigationSelection,
       destination: { DialogView(viewModel: .init(dialog: dialog)) }
@@ -197,6 +199,12 @@ extension ContactDetail {
 
 struct ContactDetail_Previews: PreviewProvider {
   static var previews: some View {
-    ContactDetail(contact: .template)
+    AppEnvironment.updateCurrentUser(.template1)
+    let store = Store(
+      initialState: AppState(),
+      reducer: appReducer
+    )
+    return ContactDetail(contact: .template1)
+      .environmentObject(StoreObservableObject(store: store))
   }
 }

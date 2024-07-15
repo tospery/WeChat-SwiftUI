@@ -1,8 +1,8 @@
 import SwiftUI
+import ComposableArchitecture
 import URLImage
 
 struct MessageRow: View {
-  let message: Message
 
   var body: some View {
     HStack(spacing: 8) {
@@ -16,6 +16,8 @@ struct MessageRow: View {
     .listRowBackground(Color.app_bg)
     .transition(.move(edge: .bottom))
   }
+
+  let message: Message
 }
 
 private extension MessageRow {
@@ -86,12 +88,18 @@ private extension MessageRow {
 
 struct MessageRow_Previews: PreviewProvider {
   static var previews: some View {
-    Group {
-      MessageRow(message: .textTemplate)
+    let store = Store(
+      initialState: AppState(),
+      reducer: appReducer
+    )
+    VStack {
+      MessageRow(message: .textTemplate1)
       MessageRow(message: .textTemplate2)
+      Spacer()
     }
-    .padding(50)
+    .padding(10)
     .background(.green)
-    .onAppear { AppEnvironment.updateCurrentUser(.template) }
+    .onAppear { AppEnvironment.updateCurrentUser(.template1) }
+    .environmentObject(StoreObservableObject(store: store))
   }
 }

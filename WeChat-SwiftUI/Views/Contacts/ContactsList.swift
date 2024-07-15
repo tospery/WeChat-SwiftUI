@@ -8,33 +8,13 @@ import SwiftUIRedux
 
 struct ContactsList<Contact: ContactType, Header: View, Destination: View>: View {
 
-  let contacts: Loadable<[Contact]>
-  let searchText: String
-  let loadContacts: () -> Void
-  let header: () -> Header?
-  let selectionDestination: (Contact) -> Destination?
-
-  init(
-    contacts: Loadable<[Contact]>,
-    searchText: String,
-    loadContacts: @escaping () -> Void,
-    header: @escaping () -> Header?,
-    selectionDestination: @escaping (Contact) -> Destination?
-  ) {
-    self.contacts = contacts
-    self.searchText = searchText
-    self.loadContacts = loadContacts
-    self.header = header
-    self.selectionDestination = selectionDestination
-  }
-
   @ViewBuilder
   var body: some View {
     switch contacts {
     case .notRequested:
       Text("").onAppear(perform: loadContacts)
 
-    case let .isLoading(last, _):
+    case let .isLoading(last):
       loadingView(contacts: last, searchText: searchText)
 
     case let .loaded(contacts):
@@ -44,6 +24,12 @@ struct ContactsList<Contact: ContactType, Header: View, Destination: View>: View
       ErrorView(error: error, retryAction: loadContacts)
     }
   }
+
+  let contacts: Loadable<[Contact]>
+  let searchText: String
+  let loadContacts: () -> Void
+  let header: () -> Header?
+  let selectionDestination: (Contact) -> Destination?
 }
 
 private extension ContactsList {
@@ -116,12 +102,10 @@ private enum ContactsListConstant {
   static let contactRowHeight: CGFloat = 44
 }
 
-// MARK: - Helper Types
-
 struct ContactsList_Previews: PreviewProvider {
   static var previews: some View {
     ContactsList(
-      contacts: .loaded([User.template, User.template2]),
+      contacts: .loaded([User.template1, User.template2]),
       searchText: "",
       loadContacts: { },
       header: { EmptyView() },
